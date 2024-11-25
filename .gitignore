@@ -1,0 +1,5 @@
+# python
+__pycache__
+
+# ignore train schedule file made by crawling
+*.json
