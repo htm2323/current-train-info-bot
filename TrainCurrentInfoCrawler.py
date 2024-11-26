@@ -14,6 +14,7 @@ class TrainCurrentInfoCrawler():
         if target == TargetCompany.JRwest:
             with open(PARAMS_FILE, encoding='utf8') as params_file:
                 params = yaml.safe_load(params_file)
+                self.request_line = params['traininfo']['jr-west']['request_line']
                 self.request_line_en = params['traininfo']['jr-west']['request_line_en']
                 self.request_station = params['traininfo']['jr-west']['request_station']
                 self.request_station_en = params['traininfo']['jr-west']['request_station_en']
@@ -33,6 +34,7 @@ class TrainCurrentInfoCrawler():
     def crawl_currentinfo_jr_west(self):
         url = self.jr_api_url + self.request_line_en + '.json'
         station_info_path = STATION_INFO_DIR + 'jrwest_' + self.request_line_en + '.json'
+        traffic_info_url = self.jr_api_url + 'area_kinki_trafficinfo.json'
 
         if os.path.isfile(station_info_path) is False:
             list_station = self.crawl_jrwest_station_info(station_info_path)
@@ -44,6 +46,18 @@ class TrainCurrentInfoCrawler():
 
         responce = urllib.request.urlopen(url)
         data = json.loads(responce.read().decode('utf-8'))
+
+        res_traffic_info = urllib.request.urlopen(traffic_info_url)
+        traffic_data = json.loads(res_traffic_info.read().decode('utf-8'))
+
+        traffic_result = None
+        for line in traffic_data['lines']:
+            if line == self.request_line_en:
+                traffic_result = self.request_line + ' ' + traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
+        
+        if traffic_result == None:
+            traffic_result = self.request_line + '線 ' + '遅延はありません'
+        print(traffic_result)
 
         list_near_train = []
 
