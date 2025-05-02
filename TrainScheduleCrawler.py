@@ -101,7 +101,8 @@ class TrainScheduleCrawler():
                             # get train id, train type, destination
                             train_id = infos.findAll('tr')[0].find('td').get_text()
                             # train_type = infos.findAll('tr')[1].find('td').get_text()
-                            train_destination = soup_train.find('div', attrs={'class': 'route-name'}).get_text().split(str(train_type + '　'))[1].split('行')[0]
+                            print('%s:%s train_type: %s, dest: %s' % (cell[0].get_text(), minute, train_type, soup_train.find('div', attrs={'class': 'route-name'}).get_text()))
+                            train_destination = soup_train.find('div', attrs={'class': 'route-name'}).get_text().split('　')[1].split('行')[0]
 
                         train_info = {'minute': minute, 'id': train_id, 'type': train_type, 'destination': train_destination, 'detail_link': detail_link}
                         hour_trains.append(train_info)
