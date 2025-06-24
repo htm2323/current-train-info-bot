@@ -48,7 +48,10 @@ class TrainCurrentInfoCrawler():
         responce = urllib.request.urlopen(url)
         data = json.loads(responce.read().decode('utf-8'))
 
-        return self.crawl_current_trafficinfo_jr_west() + self.crawl_current_next_traininfo_jr_west(data, list_station)
+        line_str, status_str = self.crawl_current_trafficinfo_jr_west()
+        upward_train, downward_train = self.crawl_current_next_traininfo_jr_west(data, list_station)
+
+        return line_str, status_str, upward_train, downward_train
 
     def crawl_current_next_traininfo_jr_west(self, data, list_station):
         def is_up_direction(train):
@@ -133,18 +136,21 @@ class TrainCurrentInfoCrawler():
         # print(upward_train)
         # print(downward_train)
 
-        if len(upward_train) == 0 and len(downward_train) == 0:
-            print('☆ 本日の営業は終了しました☆')
-            return
+        # if len(upward_train) == 0 and len(downward_train) == 0:
+        #     print('☆ 本日の営業は終了しました☆')
+        #     return
         
         downward_train.reverse()
         
         # result = '    上り\n'
-        result = '    上り<p>'
+        # result = '    上り<p>'
+
+        result_upward_train = []
+        result_downward_train = []
 
         for train in upward_train:
             train_type = train['displayType']
-            train_dist = train['dest']['text']
+            train_dest = train['dest']['text']
             train_id = train['no']
             between = train['pos'].split('_')
 
@@ -153,7 +159,7 @@ class TrainCurrentInfoCrawler():
             deperture_time = get_train_deperture_time(train_id, self.schedule[0])
             hour = ('0' + deperture_time['hour']) if len(deperture_time['hour']) == 1 else deperture_time['hour']
             minute = ('0' + deperture_time['minute']) if len(deperture_time['minute']) == 1 else deperture_time['minute']
-            st_deperture_time = hour + ':' + minute + '発 '
+            st_deperture_time = hour + ':' + minute
 
             # print(st_deperture_time)
             
@@ -164,21 +170,22 @@ class TrainCurrentInfoCrawler():
                 to_st = self.search_station_name(list_station, between[0])
                 pos = from_st + ' から ' + to_st + ' に向かって走行中'
 
-            if train['delayMinutes'] != 0:
-                train_delay = train['delayMinutes']
-                res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + str(train_delay) + ' 分遅れで ' + pos
-            else:
-                res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + pos
+            # if train['delayMinutes'] != 0:
+            #     train_delay = train['delayMinutes']
+            #     res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + str(train_delay) + ' 分遅れで ' + pos
+            # else:
+            #     res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + pos
 
             # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分\n'
-            result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分<br>'
+            # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分<br>'
+            result_upward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': str(train['delayMinutes']), 'remain_time': str(remain_time_until_deperture(train, hour, minute))})
 
         # result += '-----\n    下り\n'
-        result += '-----<br>    下り<p>'
+        # result += '-----<br>    下り<p>'
 
         for train in downward_train:
             train_type = train['displayType']
-            train_dist = train['dest']['text']
+            train_dest = train['dest']['text']
             train_id = train['no']
             between = train['pos'].split('_')
         
@@ -187,7 +194,7 @@ class TrainCurrentInfoCrawler():
             deperture_time = get_train_deperture_time(train_id, self.schedule[1])
             hour = ('0' + deperture_time['hour']) if len(deperture_time['hour']) == 1 else deperture_time['hour']
             minute = ('0' + deperture_time['minute']) if len(deperture_time['minute']) == 1 else deperture_time['minute']
-            st_deperture_time = hour + ':' + minute + '発 '
+            st_deperture_time = hour + ':' + minute
             
             # print(st_deperture_time)
             
@@ -198,17 +205,18 @@ class TrainCurrentInfoCrawler():
                 to_st = self.search_station_name(list_station, between[1])
                 pos = from_st + ' から ' + to_st + ' に向かって走行中'
 
-            if train['delayMinutes'] != 0:
-                train_delay = train['delayMinutes']
-                res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + str(train_delay) + ' 分遅れで ' + pos
-            else:
-                res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + pos
+            # if train['delayMinutes'] != 0:
+            #     train_delay = train['delayMinutes']
+            #     res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + str(train_delay) + ' 分遅れで ' + pos
+            # else:
+            #     res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + pos
 
             # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分\n'
-            result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分<br>'
-            
+            # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分<br>'
+            result_downward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': train['delayMinutes'], 'remain_time': remain_time_until_deperture(train, hour, minute)})
+
         # print(result)              
-        return result
+        return result_upward_train, result_downward_train
 
     def crawl_current_trafficinfo_jr_west(self):
         traffic_info_url = self.jr_api_url + 'area_kinki_trafficinfo.json'
@@ -218,12 +226,11 @@ class TrainCurrentInfoCrawler():
         traffic_result = None
         for line in traffic_data['lines']:
             if line == self.request_line_en:
-                traffic_result = self.request_line + '線 ' + traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status'] + '<br>'
+                # traffic_result = self.request_line + '線 ' + traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status'] + '<br>'
+                return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
         
-        if traffic_result == None:
-            traffic_result = self.request_line + '線 ' + '遅延はありません'
         # print(traffic_result)
-        return traffic_result + '<p>'
+        return 'JR ' + self.request_line + '線 ', '遅延はありません'
 
     def load_jrwest_schedule(self):
         upward_schedule_path = SCHEDULE_DIR + 'jrwest_' + self.request_line_en + '_' + self.request_station_en + '_upward.json'
