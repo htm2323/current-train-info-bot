@@ -8,9 +8,14 @@ app = Flask(__name__, template_folder='.')
 def index():
     crawler = TrainCurrentInfoCrawler()
     # JR西日本の列車情報を取得
-    result_string = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
+    line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
+    print(line_name_str, status_str, upward_train, downward_train)
     # 結果をHTMLに渡す
-    return render_template('index.html', result=result_string)
+    return render_template('index.html',
+                           line_name=line_name_str, 
+                           status=status_str, 
+                           upward_train=upward_train, 
+                           downward_train=downward_train)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -5,9 +5,65 @@
     <!-- 30秒後にリロードする -->
     <meta http-equiv="refresh" content="30">
     <title>列車運行情報</title>
+    <style>
+        body {
+            background: #292929;
+            color: rgb(0, 197, 0);
+        }
+        h1, h2, p {
+            color: rgb(255, 255, 255);
+        }
+        table { 
+            border-collapse: collapse; 
+            margin-bottom: 2em; 
+            width: 100%;
+        }
+        th {
+            border: 1px solid #ccc;
+            padding: 0.5em 1em;
+            background: #222;
+            color: #fff;
+        }
+        td {
+            border: 1px solid #ccc;
+            padding: 0.5em 1em;
+            color: orange;
+            background: #111;
+        }
+    </style>
 </head>
 <body>
     <h1>列車運行情報</h1>
-    <p>{{ result|safe }}</p>
+    <h2>{{ line_name }} : {{ status }}</h2>
+
+    <h2>上り (京都方面)</h2>
+    <table>
+        <tr>
+            <th>発車時刻</th><th>種別</th><th>行先</th><th>案内</th>
+        </tr>
+        {% for train in upward_train %}
+        <tr>
+            <td>{{ train.time }}</td>
+            <td>{{ train.type }}</td>
+            <td>{{ train.dest }}</td>
+            <td>到着まであと {{ train.remain_time }} 分</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>下り (大阪方面)</h2>
+    <table>
+        <tr>
+            <th>発車時刻</th><th>種別</th><th>行先</th><th>案内</th>
+        </tr>
+        {% for train in downward_train %}
+        <tr>
+            <td>{{ train.time }}</td>
+            <td>{{ train.type }}</td>
+            <td>{{ train.dest }}</td>
+            <td>到着まであと {{ train.remain_time }} 分</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
