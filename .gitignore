@@ -6,3 +6,6 @@ params.yaml
 
 # ignore train schedule file made by crawling
 *.json
+
+# ignore log files
+*.log

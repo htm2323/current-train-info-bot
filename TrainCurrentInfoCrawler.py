@@ -2,12 +2,15 @@ import json
 import urllib.request
 import datetime
 import yaml
+import logging
 from TargetCompanyEnum import TargetCompany
 import os
 
 PARAMS_FILE = 'params.yaml'
 SCHEDULE_DIR = 'schedule_json/'
 STATION_INFO_DIR = 'station_json/'
+
+logger = logging.getLogger("train_logger")
 
 class TrainCurrentInfoCrawler():
     def train_currentinfo_crawl(self, target):
@@ -23,13 +26,13 @@ class TrainCurrentInfoCrawler():
             return self.crawl_currentinfo_jr_west()
 
         elif target == TargetCompany.Hankyu:
-            print('hankyu is under constructing')
+            logger.warning('hankyu is under constructing')
 
             with open(PARAMS_FILE, encoding='utf8') as params_file:
                 params = yaml.safe_load(params_file)
         
         else:
-            print('not support')
+            logger.warning('not support')
 
     def crawl_currentinfo_jr_west(self):
         self.schedule = self.load_jrwest_schedule()
@@ -114,7 +117,15 @@ class TrainCurrentInfoCrawler():
         downward_train = []
 
         for train in data['trains']:
-            print(train['no'], is_in_line(train), is_exist_in_schedule(train))
+            debug_between = train['pos'].split('_')
+            if debug_between[1] == '####':
+                debug_pos = self.search_station_name(list_station, debug_between[0])
+            else:
+                debug_from_st = self.search_station_name(list_station, debug_between[1])
+                debug_to_st = self.search_station_name(list_station, debug_between[0])
+                debug_pos = debug_from_st + ' ~ ' + debug_to_st
+
+            logger.debug(f"Train ID: {train['no']}, Type:{train['displayType']}, Dist:{train['dest']['text']}, Delay:{train['delayMinutes']} min, Pos: {debug_pos}, Is_In_Line: {is_in_line(train)}, Is_Exist_In_Schedule: {is_exist_in_schedule(train)}")
             if is_in_line(train) and is_exist_in_schedule(train):
                 if is_behind_train(self.request_station_id, train['pos'].split('_')[0], is_up_direction(train)):
                     if is_up_direction(train):
@@ -134,16 +145,6 @@ class TrainCurrentInfoCrawler():
                                     downward_train[i] = train
                                     break
 
-        # print(upward_train)
-        # print(downward_train)
-
-        # if len(upward_train) == 0 and len(downward_train) == 0:
-        #     print('☆ 本日の営業は終了しました☆')
-        #     return
-        
-        # result = '    上り\n'
-        # result = '    上り<p>'
-
         result_upward_train = []
         result_downward_train = []
 
@@ -158,14 +159,10 @@ class TrainCurrentInfoCrawler():
             train_id = train['no']
             between = train['pos'].split('_')
 
-            # print(train_id)
-
             deperture_time = get_train_deperture_time(train_id, self.schedule[0])
             hour = ('0' + deperture_time['hour']) if len(deperture_time['hour']) == 1 else deperture_time['hour']
             minute = ('0' + deperture_time['minute']) if len(deperture_time['minute']) == 1 else deperture_time['minute']
             st_deperture_time = hour + ':' + minute
-
-            # print(st_deperture_time)
             
             if between[1] == '####':
                 pos = self.search_station_name(list_station, between[0]) + ' に停車中'
@@ -173,21 +170,9 @@ class TrainCurrentInfoCrawler():
                 from_st = self.search_station_name(list_station, between[1])
                 to_st = self.search_station_name(list_station, between[0])
                 pos = from_st + ' から ' + to_st + ' に向かって走行中'
-
-            # if train['delayMinutes'] != 0:
-            #     train_delay = train['delayMinutes']
-            #     res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + str(train_delay) + ' 分遅れで ' + pos
-            # else:
-            #     res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + pos
-
-            # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分\n'
-            # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分<br>'
             train_delay = str(train['delayMinutes']) + '分' if train['delayMinutes'] != 0 else 'なし'
 
             result_upward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': train_delay, 'remain_time': str(remain_time_until_deperture(train, hour, minute))})
-
-        # result += '-----\n    下り\n'
-        # result += '-----<br>    下り<p>'
 
         for train in downward_train:
             if '普通' in train['displayType']:
@@ -199,15 +184,11 @@ class TrainCurrentInfoCrawler():
             train_dest = train['dest']['text']
             train_id = train['no']
             between = train['pos'].split('_')
-        
-            # print(train_id)
 
             deperture_time = get_train_deperture_time(train_id, self.schedule[1])
             hour = ('0' + deperture_time['hour']) if len(deperture_time['hour']) == 1 else deperture_time['hour']
             minute = ('0' + deperture_time['minute']) if len(deperture_time['minute']) == 1 else deperture_time['minute']
             st_deperture_time = hour + ':' + minute
-            
-            # print(st_deperture_time)
             
             if between[1] == '####':
                 pos = self.search_station_name(list_station, between[0]) + ' に停車中'
@@ -216,22 +197,12 @@ class TrainCurrentInfoCrawler():
                 to_st = self.search_station_name(list_station, between[1])
                 pos = from_st + ' から ' + to_st + ' に向かって走行中'
 
-            # if train['delayMinutes'] != 0:
-            #     train_delay = train['delayMinutes']
-            #     res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + str(train_delay) + ' 分遅れで ' + pos
-            # else:
-            #     res_train = st_deperture_time + train_type + ' ' + train_dist + '行きが ' + pos
-
-            # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分\n'
-            # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分<br>'
             train_delay = str(train['delayMinutes']) + '分' if train['delayMinutes'] != 0 else 'なし'
 
             result_downward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': train_delay, 'remain_time': remain_time_until_deperture(train, hour, minute)})
 
         for train_list in [result_upward_train, result_downward_train]:
             train_list.sort(key=lambda x: int(x['remain_time']))
-
-        # print(result)              
         return result_upward_train, result_downward_train
 
     def crawl_current_trafficinfo_jr_west(self):
@@ -242,10 +213,8 @@ class TrainCurrentInfoCrawler():
         traffic_result = None
         for line in traffic_data['lines']:
             if line == self.request_line_en:
-                # traffic_result = self.request_line + '線 ' + traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status'] + '<br>'
                 return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
-        
-        # print(traffic_result)
+
         return 'JR ' + self.request_line + '線 ', '遅延はありません'
 
     def load_jrwest_schedule(self):
