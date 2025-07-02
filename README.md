@@ -27,7 +27,7 @@
     request_line_en: 'kyoto'
     request_station: '高槻'
     request_station_en: 'takatsuki'
-    schedule_url: # JRおでかけネット上の駅時刻表URL
+    schedule_url: ['JRおでかけネット上の駅時刻表URL(上り)', 'JRおでかけネット上の駅時刻表URL(下り)']
     ```
 
 3. **時刻表データの取得**
