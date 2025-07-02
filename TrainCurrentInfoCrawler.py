@@ -114,6 +114,7 @@ class TrainCurrentInfoCrawler():
         downward_train = []
 
         for train in data['trains']:
+            print(train['no'], is_in_line(train), is_exist_in_schedule(train))
             if is_in_line(train) and is_exist_in_schedule(train):
                 if is_behind_train(self.request_station_id, train['pos'].split('_')[0], is_up_direction(train)):
                     if is_up_direction(train):
@@ -140,8 +141,6 @@ class TrainCurrentInfoCrawler():
         #     print('☆ 本日の営業は終了しました☆')
         #     return
         
-        downward_train.reverse()
-        
         # result = '    上り\n'
         # result = '    上り<p>'
 
@@ -149,7 +148,12 @@ class TrainCurrentInfoCrawler():
         result_downward_train = []
 
         for train in upward_train:
-            train_type = train['displayType']
+            if '普通' in train['displayType']:
+                train_type = '普通'
+            elif '快速' in train['displayType']:
+                train_type = '快速'
+            else:
+                train_type = train['displayType']
             train_dest = train['dest']['text']
             train_id = train['no']
             between = train['pos'].split('_')
@@ -178,13 +182,20 @@ class TrainCurrentInfoCrawler():
 
             # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分\n'
             # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分<br>'
-            result_upward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': str(train['delayMinutes']), 'remain_time': str(remain_time_until_deperture(train, hour, minute))})
+            train_delay = str(train['delayMinutes']) + '分' if train['delayMinutes'] != 0 else 'なし'
+
+            result_upward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': train_delay, 'remain_time': str(remain_time_until_deperture(train, hour, minute))})
 
         # result += '-----\n    下り\n'
         # result += '-----<br>    下り<p>'
 
         for train in downward_train:
-            train_type = train['displayType']
+            if '普通' in train['displayType']:
+                train_type = '普通'
+            elif '快速' in train['displayType']:
+                train_type = '快速'
+            else:
+                train_type = train['displayType']
             train_dest = train['dest']['text']
             train_id = train['no']
             between = train['pos'].split('_')
@@ -213,7 +224,12 @@ class TrainCurrentInfoCrawler():
 
             # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分\n'
             # result += res_train + '  到着まであと ' + str(remain_time_until_deperture(train, hour, minute)) + ' 分<br>'
-            result_downward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': train['delayMinutes'], 'remain_time': remain_time_until_deperture(train, hour, minute)})
+            train_delay = str(train['delayMinutes']) + '分' if train['delayMinutes'] != 0 else 'なし'
+
+            result_downward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': train_delay, 'remain_time': remain_time_until_deperture(train, hour, minute)})
+
+        for train_list in [result_upward_train, result_downward_train]:
+            train_list.sort(key=lambda x: int(x['remain_time']))
 
         # print(result)              
         return result_upward_train, result_downward_train
