@@ -10,7 +10,7 @@
             background: #292929;
             color: rgb(0, 197, 0);
         }
-        h1, h2, p {
+        h1, h2, h3, p {
             color: rgb(255, 255, 255);
         }
         table { 
@@ -27,8 +27,34 @@
         td {
             border: 1px solid #ccc;
             padding: 0.5em 1em;
-            color: orange;
+            color: #fff;
             background: #111;
+            font-size: 2.5rem;
+        }
+        .time, .dest, .delay {
+            font-size: 3rem;
+            font-weight: bold;
+            color: orange;
+            letter-spacing: 0.1em;
+        }
+        .type-normal {
+            font-size: 3rem;
+            font-weight: bold;
+            color: rgb(0, 197, 0); /* 緑 */
+        }
+        .type-rapid {
+            font-size: 3rem;
+            font-weight: bold;
+            color: orange;
+        }
+        .danger {
+            color: #e90000;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        @media (max-width: 900px) {
+            th, td { font-size: 1.2rem; padding: 0.5em; }
+            .time, .dest, .info, .delay { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -36,32 +62,58 @@
     <h1>列車運行情報</h1>
     <h2>{{ line_name }} : {{ status }}</h2>
 
-    <h2>上り (京都方面)</h2>
+    <h3>上り (京都方面)</h3>
     <table>
         <tr>
-            <th>発車時刻</th><th>種別</th><th>行先</th><th>案内</th>
+            <th>発車時刻</th><th>種別</th><th>行先</th><th>遅延</th><th>案内</th>
         </tr>
         {% for train in upward_train %}
         <tr>
-            <td>{{ train.time }}</td>
-            <td>{{ train.type }}</td>
-            <td>{{ train.dest }}</td>
-            <td>到着まであと {{ train.remain_time }} 分</td>
+            <td class="time">{{ train.time }}</td>
+            <td class="{% if train.type == '普通' %}type-normal{% elif train.type == '快速' %}type-rapid{% else %}type{% endif %}">
+                {{ train.type }}
+            </td>
+            <td class="dest">{{ train.dest }}</td>
+            <td class="{% if train.delay == 'なし'%}{% else %}delay{% endif %}">
+                {{ train.delay }}
+            </td>
+            <td>
+                {% if train.remain_time|int < 7 %}
+                    あと <span class="time">{{ train.remain_time }}</span> 分 <span class="danger">間に合いません</span>
+                {% elif train.remain_time|int <= 12 %}
+                    あと <span class="time">{{ train.remain_time }}</span> 分 <span class="time">走れば間に合います</span>
+                {% else %}
+                    到着まであと <span class="time">{{ train.remain_time }}</span> 分
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>
 
-    <h2>下り (大阪方面)</h2>
+    <h3>下り (大阪方面)</h3>
     <table>
         <tr>
-            <th>発車時刻</th><th>種別</th><th>行先</th><th>案内</th>
+            <th>発車時刻</th><th>種別</th><th>行先</th><th>遅延</th><th>案内</th>
         </tr>
         {% for train in downward_train %}
         <tr>
-            <td>{{ train.time }}</td>
-            <td>{{ train.type }}</td>
-            <td>{{ train.dest }}</td>
-            <td>到着まであと {{ train.remain_time }} 分</td>
+            <td class="time">{{ train.time }}</td>
+            <td class="{% if train.type == '普通' %}type-normal{% elif train.type == '快速' %}type-rapid{% else %}type{% endif %}">
+                {{ train.type }}
+            </td>
+            <td class="dest">{{ train.dest }}</td>
+            <td class="{% if train.delay == 'なし'%}{% else %}delay{% endif %}">
+                {{ train.delay }}
+            </td>
+            <td>
+                {% if train.remain_time|int < 7 %}
+                    あと <span class="time">{{ train.remain_time }}</span> 分 <span class="danger">間に合いません</span>
+                {% elif train.remain_time|int <= 12 %}
+                    あと <span class="time">{{ train.remain_time }}</span> 分 <span class="time">走れば間に合います</span>
+                {% else %}
+                    到着まであと <span class="time">{{ train.remain_time }}</span> 分
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>
