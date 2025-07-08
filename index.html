@@ -102,9 +102,9 @@
                 {{ train.delay }}
             </td>
             <td>
-                {% if train.remain_time|int < 7 %}
+                {% if train.remain_time|int < danger_minutes %}
                     あと <span class="time">{{ train.remain_time }}</span> 分 <span class="danger">間に合いません</span>
-                {% elif train.remain_time|int <= 12 %}
+                {% elif train.remain_time|int <= warning_minutes %}
                     あと <span class="time">{{ train.remain_time }}</span> 分 <span class="time">走れば間に合います</span>
                 {% else %}
                     到着まであと <span class="time">{{ train.remain_time }}</span> 分

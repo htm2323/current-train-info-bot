@@ -4,8 +4,10 @@ traininfo:
     request_line_en: 'kyoto'
     request_station: ''
     request_station_en: ''
-    api_url: ''
+    api_url: 'https://www.train-guide.westjr.co.jp/api/v3/'
     schedule_url: ['', '']
+    danger_minutes: 
+    warning_minutes: 
   hankyu:
     request_line: '京都'
     request_line_en: 'kyoto'

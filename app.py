@@ -1,6 +1,7 @@
 import threading
 import time
 import logging
+import yaml
 from flask import Flask, request, render_template, make_response
 from TrainCurrentInfoCrawler import TrainCurrentInfoCrawler
 from TargetCompanyEnum import TargetCompany
@@ -13,6 +14,12 @@ logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler('train_info.log', 'w', 'utf-8')
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
+
+# params.yamlを読み込み
+with open('params.yaml', 'r', encoding='utf-8') as f:
+    params = yaml.safe_load(f)
+DANGER_MINUTES = params['traininfo']['jr-west']['danger_minutes']
+WARNING_MINUTES = params['traininfo']['jr-west']['warning_minutes']
 
 # JR西日本の列車情報を非同期に取得
 def crawl_loop():
@@ -44,7 +51,9 @@ def index():
                                 line_name=line_name_str, 
                                 status=status_str, 
                                 upward_train=upward_train, 
-                                downward_train=downward_train))
+                                downward_train=downward_train,
+                                danger_minutes=DANGER_MINUTES,
+                                warning_minutes=WARNING_MINUTES))
     logger.info(f"{request.remote_addr} からアクセス: {request.method} {request.path} | 応答: {response.status_code}")
     return response
 
