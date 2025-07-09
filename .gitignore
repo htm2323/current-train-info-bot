@@ -8,4 +8,4 @@ params.yaml
 *.json
 
 # ignore log files
-*.log
+/log
