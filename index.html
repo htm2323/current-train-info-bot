@@ -28,6 +28,7 @@
         table { 
             border-collapse: collapse; 
             width: 100%;
+            table-layout: fixed;
         }
         th {
             border: 1px solid #ccc;
@@ -44,6 +45,12 @@
             font-size: 2.5rem;
             text-align: center;
         }
+        /* 列幅の固定設定 */
+        th:nth-child(1), td:nth-child(1) { width: 12%; } /* 発車時刻 */
+        th:nth-child(2), td:nth-child(2) { width: 10%; } /* 種別 */
+        th:nth-child(3), td:nth-child(3) { width: 18%; } /* 行先 */
+        th:nth-child(4), td:nth-child(4) { width: 12%; } /* 遅延 */
+        th:nth-child(5), td:nth-child(5) { width: 48%; } /* 案内 */
         .time, .dest, .delay {
             font-size: 3rem;
             font-weight: bold;
@@ -70,6 +77,12 @@
             th { font-size: 1rem; padding: 0.3em 0.3em; }
             td { font-size: 1.75rem; padding: 0.3em 0.3em; }
             .time, .dest, .delay, .type-normal, .type-rapid, .danger { font-size: 1.75rem; }
+            /* 小画面での列幅調整 */
+            th:nth-child(1), td:nth-child(1) { width: 15%; } /* 発車時刻 */
+            th:nth-child(2), td:nth-child(2) { width: 12%; } /* 種別 */
+            th:nth-child(3), td:nth-child(3) { width: 15%; } /* 行先 */
+            th:nth-child(4), td:nth-child(4) { width: 13%; } /* 遅延 */
+            th:nth-child(5), td:nth-child(5) { width: 45%; } /* 案内 */
         }
         @media (min-width: 1200px) {
             h1 { font-size: 2.5rem;}
