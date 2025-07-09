@@ -1,6 +1,9 @@
 import threading
 import time
+import datetime
+import os
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import yaml
 from flask import Flask, request, render_template, make_response
 from TrainCurrentInfoCrawler import TrainCurrentInfoCrawler
@@ -8,10 +11,20 @@ from TargetCompanyEnum import TargetCompany
 
 app = Flask(__name__, template_folder='.')
 
-# ログ設定
+# logフォルダが存在しない場合は作成
+os.makedirs('log', exist_ok=True)
+
+# ログ設定: 毎日3時にローテーション, 最大7日分のログを保持
 logger = logging.getLogger("train_logger")
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler('train_info.log', 'w', 'utf-8')
+handler = TimedRotatingFileHandler(
+    'log/train_info.log',
+    when='midnight',
+    interval=1,
+    atTime=datetime.time(3, 0),
+    backupCount=7,
+    encoding='utf-8'
+)
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
@@ -21,27 +34,59 @@ with open('params.yaml', 'r', encoding='utf-8') as f:
 DANGER_MINUTES = params['traininfo']['jr-west']['danger_minutes']
 WARNING_MINUTES = params['traininfo']['jr-west']['warning_minutes']
 
-# JR西日本の列車情報を非同期に取得
+def is_service_time():
+    """運行時間内かどうかを判定（4:00-26:00）"""
+    now = datetime.datetime.now()
+    hour = now.hour
+    return (4 <= hour <= 23) or (0 <= hour < 2)
+
 def crawl_loop():
+    """JR西日本の列車情報を非同期に取得"""
     # グローバル変数でキャッシュする
     global line_name_str, status_str, upward_train, downward_train
     crawler = TrainCurrentInfoCrawler()
     while True:
-        try:
-            line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
-            # 運行情報をログファイルに出力
-            logger.info(
-                f"{line_name_str} の状態 : {status_str}"
-            )
-            logger.info(
-                f"取得した上り: {upward_train}"
-            )
-            logger.info(
-                f"取得した下り: {downward_train}"
-            )
-        except Exception as e:
-            logger.error(f"クロール中にエラー: {e}")
-        time.sleep(30)
+        if is_service_time():
+            try:
+                line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
+                # 運行情報をログファイルに出力
+                logger.info(
+                    f"{line_name_str} の状態 : {status_str}"
+                )
+                logger.info(
+                    f"取得した上り: {upward_train}"
+                )
+                logger.info(
+                    f"取得した下り: {downward_train}"
+                )
+                if len(upward_train) == 0:
+                    upward_train.append({'time': '', 'type': '', 'dest': '', 'pos': '', 'delay': '', 'remain_time': "☆ 本日の運行は終了しました ☆"})
+                if len(downward_train) == 0:
+                    downward_train.append({'time': '', 'type': '', 'dest': '', 'pos': '', 'delay': '', 'remain_time': "☆ 本日の運行は終了しました ☆"})
+            except Exception as e:
+                logger.error(f"クロール中にエラー: {e}")
+            time.sleep(30)
+        else:
+            # サービス休止時間（2:00-4:59）
+            try:
+                line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
+                # 一応取得した運行情報をログファイルに出力
+                logger.info(
+                    f"{line_name_str} の状態 : {status_str}"
+                )
+                logger.info(
+                    f"取得した上り: {upward_train}"
+                )
+                logger.info(
+                    f"取得した下り: {downward_train}"
+                )
+
+                # サービス休止中のメッセージを設定
+                status_str = "☆ 本日の運行は終了しました ☆"
+                logger.info("サービス休止時間中")
+            except Exception as e:
+                logger.error(f"クロール中にエラー: {e}")
+            time.sleep(300)
 
 @app.route('/')
 def index():
