@@ -202,15 +202,10 @@ class TrainCurrentInfoCrawler():
             result_upward_train.append({'time': st_deperture_time, 'type': train_type, 'dest': train_dest, 'pos': pos, 'delay': train_delay, 'remain_time': str(remain_time_until_deperture(train, hour, minute))})
 
         for train in downward_train:
-            if '普通' in train['displayType']:
-                train_type = '普通'
-            elif '快速' in train['displayType']:
-                train_type = '快速'
-            else:
-                train_type = train['displayType']
             train_dest = train['dest']['text']
             train_id = train['no']
             between = train['pos'].split('_')
+            train_type = get_train_type(train_id, self.schedule[1])
 
             deperture_time = get_train_deperture_time(train_id, self.schedule[1])
             hour = ('0' + deperture_time['hour']) if len(deperture_time['hour']) == 1 else deperture_time['hour']
