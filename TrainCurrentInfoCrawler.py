@@ -48,11 +48,19 @@ class TrainCurrentInfoCrawler():
 
         self.request_station_id = [item['id'] for item in list_station if item['name'] == self.request_station][0]
 
-        responce = urllib.request.urlopen(url)
-        data = json.loads(responce.read().decode('utf-8'))
+        try:
+            responce = urllib.request.urlopen(url)
+            data = json.loads(responce.read().decode('utf-8'))
+        except Exception as e:
+            logger.error(f"JR西日本の列車走行位置へHTTPアクセス中にエラー: {e}")
+            return None, None, [], []
 
         line_str, status_str = self.crawl_current_trafficinfo_jr_west()
-        upward_train, downward_train = self.crawl_current_next_traininfo_jr_west(data, list_station)
+        try:
+            upward_train, downward_train = self.crawl_current_next_traininfo_jr_west(data, list_station)
+        except Exception as e:
+            logger.error(f"列車情報の処理中にエラー: {e}")
+            return line_str, status_str, [], []
 
         return line_str, status_str, upward_train, downward_train
 
@@ -207,8 +215,13 @@ class TrainCurrentInfoCrawler():
 
     def crawl_current_trafficinfo_jr_west(self):
         traffic_info_url = self.jr_api_url + 'area_kinki_trafficinfo.json'
-        res_traffic_info = urllib.request.urlopen(traffic_info_url)
-        traffic_data = json.loads(res_traffic_info.read().decode('utf-8'))
+
+        try:
+            res_traffic_info = urllib.request.urlopen(traffic_info_url)
+            traffic_data = json.loads(res_traffic_info.read().decode('utf-8'))
+        except Exception as e:
+            logger.error(f"JR西日本の運行情報へHTTPアクセス中にエラー: {e}")
+            return 'JR ' + self.request_line + '線 ', '運行情報の取得に失敗しました'
 
         traffic_result = None
         for line in traffic_data['lines']:
@@ -230,8 +243,13 @@ class TrainCurrentInfoCrawler():
 
     def crawl_jrwest_station_info(self, output_path):
         url_stationinfo = self.jr_api_url + self.request_line_en + '_st.json'
-        responce_stationinfo = urllib.request.urlopen(url_stationinfo)
-        data_station = json.loads(responce_stationinfo.read().decode('utf-8'))
+
+        try:
+            responce_stationinfo = urllib.request.urlopen(url_stationinfo)
+            data_station = json.loads(responce_stationinfo.read().decode('utf-8'))
+        except Exception as e:
+            logger.error(f"JR西日本の駅情報へHTTPアクセス中にエラー: {e}")
+            return []
 
         list_station = []
 

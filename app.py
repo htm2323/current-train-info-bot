@@ -47,45 +47,39 @@ def crawl_loop():
     crawler = TrainCurrentInfoCrawler()
     while True:
         if is_service_time():
-            try:
-                line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
-                # 運行情報をログファイルに出力
-                logger.info(
-                    f"{line_name_str} の状態 : {status_str}"
-                )
-                logger.info(
-                    f"取得した上り: {upward_train}"
-                )
-                logger.info(
-                    f"取得した下り: {downward_train}"
-                )
-                if len(upward_train) == 0:
-                    upward_train.append({'time': '', 'type': '', 'dest': '', 'pos': '', 'delay': '', 'remain_time': "☆ 本日の運行は終了しました ☆"})
-                if len(downward_train) == 0:
-                    downward_train.append({'time': '', 'type': '', 'dest': '', 'pos': '', 'delay': '', 'remain_time': "☆ 本日の運行は終了しました ☆"})
-            except Exception as e:
-                logger.error(f"クロール中にエラー: {e}")
+            line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
+            # 運行情報をログファイルに出力
+            logger.info(
+                f"{line_name_str} の状態 : {status_str}"
+            )
+            logger.info(
+                f"取得した上り: {upward_train}"
+            )
+            logger.info(
+                f"取得した下り: {downward_train}"
+            )
+            if len(upward_train) == 0:
+                upward_train.append({'time': '', 'type': '', 'dest': '', 'pos': '', 'delay': '', 'remain_time': "☆ 本日の運行は終了しました ☆"})
+            if len(downward_train) == 0:
+                downward_train.append({'time': '', 'type': '', 'dest': '', 'pos': '', 'delay': '', 'remain_time': "☆ 本日の運行は終了しました ☆"})
             time.sleep(30)
         else:
             # サービス休止時間（2:00-4:59）
-            try:
-                line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
-                # 一応取得した運行情報をログファイルに出力
-                logger.info(
-                    f"{line_name_str} の状態 : {status_str}"
-                )
-                logger.info(
-                    f"取得した上り: {upward_train}"
-                )
-                logger.info(
-                    f"取得した下り: {downward_train}"
-                )
+            line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
+            # 一応取得した運行情報をログファイルに出力
+            logger.info(
+                f"{line_name_str} の状態 : {status_str}"
+            )
+            logger.info(
+                f"取得した上り: {upward_train}"
+            )
+            logger.info(
+                f"取得した下り: {downward_train}"
+            )
 
-                # サービス休止中のメッセージを設定
-                status_str = "☆ 本日の運行は終了しました ☆"
-                logger.info("サービス休止時間中")
-            except Exception as e:
-                logger.error(f"クロール中にエラー: {e}")
+            # サービス休止中のメッセージを設定
+            status_str = "☆ 本日の運行は終了しました ☆"
+            logger.info("サービス休止時間中")
             time.sleep(300)
 
 @app.route('/')
