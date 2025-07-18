@@ -226,7 +226,10 @@ class TrainCurrentInfoCrawler():
         traffic_result = None
         for line in traffic_data['lines']:
             if line == self.request_line_en:
-                return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
+                if traffic_data['lines'][line]['section']['from'] is None or traffic_data['lines'][line]['section']['to'] is None:
+                    return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
+                else:
+                    return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
 
         return 'JR ' + self.request_line + '線 ', '遅延はありません'
 
