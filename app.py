@@ -34,6 +34,8 @@ with open('params.yaml', 'r', encoding='utf-8') as f:
 DANGER_MINUTES = params['traininfo']['jr-west']['danger_minutes']
 WARNING_MINUTES = params['traininfo']['jr-west']['warning_minutes']
 
+crawler = TrainCurrentInfoCrawler()
+
 def is_service_time():
     """運行時間内かどうかを判定（4:00-26:00）"""
     now = datetime.datetime.now()
@@ -43,11 +45,14 @@ def is_service_time():
 def crawl_loop():
     """JR西日本の列車情報を非同期に取得"""
     # グローバル変数でキャッシュする
-    global line_name_str, status_str, upward_train, downward_train
-    crawler = TrainCurrentInfoCrawler()
+    global line_name_str, status_str, upward_train, downward_train, last_update_time
     while True:
         if is_service_time():
             line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
+
+            # 最終更新時間を更新
+            last_update_time = datetime.datetime.now().strftime("%H:%M:%S")
+
             # 運行情報をログファイルに出力
             logger.info(
                 f"{line_name_str} の状態 : {status_str}"
@@ -66,6 +71,10 @@ def crawl_loop():
         else:
             # サービス休止時間（2:00-4:59）
             line_name_str, status_str, upward_train, downward_train = crawler.train_currentinfo_crawl(TargetCompany.JRwest)
+
+            # 最終更新時間を更新
+            last_update_time = datetime.datetime.now().strftime("%H:%M:%S")
+
             # 一応取得した運行情報をログファイルに出力
             logger.info(
                 f"{line_name_str} の状態 : {status_str}"
@@ -92,7 +101,8 @@ def index():
                                 upward_train=upward_train, 
                                 downward_train=downward_train,
                                 danger_minutes=DANGER_MINUTES,
-                                warning_minutes=WARNING_MINUTES))
+                                warning_minutes=WARNING_MINUTES,
+                                last_update=last_update_time))
     logger.info(f"{request.remote_addr} からアクセス: {request.method} {request.path} | 応答: {response.status_code}")
     return response
 

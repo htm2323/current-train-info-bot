@@ -10,9 +10,14 @@
             background: #292929;
             color: rgb(0, 197, 0);
         }
+        .header-row {
+            position: relative;
+            height: auto;
+            margin-bottom: 0;
+        }
         h1{
+            margin: 0;
             color: rgb(255, 255, 255);
-            margin-bottom: 0em;
             text-align: center;
         }
         h2{
@@ -25,7 +30,14 @@
             margin-bottom: 0.1em;
             color: rgb(255, 255, 255);
         }
-        table { 
+        .update-time {
+            position: absolute;
+            top: 0em;
+            left: 0em;
+            text-align: left;
+            color: rgb(255, 255, 255);
+        }
+        table {
             border-collapse: collapse; 
             width: 100%;
             table-layout: fixed;
@@ -71,12 +83,13 @@
             font-size: 3rem;
             font-weight: bold;
         }
+        
         @media (max-width: 1200px) {
             h1 { font-size: 1.75rem;}
-            h2, h3{ font-size: 1.2rem;}
+            h2, h3, .update-time { font-size: 1.2rem;}
             th { font-size: 1rem; padding: 0.3em 0.3em; }
             td { font-size: 1.75rem; padding: 0.3em 0.3em; }
-            .time, .dest, .delay, .type-normal, .type-rapid, .danger { font-size: 1.75rem; }
+            .time, .dest, .delay, .type-normal, .type-rapid, .danger{ font-size: 1.75rem; }
             /* 小画面での列幅調整 */
             th:nth-child(1), td:nth-child(1) { width: 15%; } /* 発車時刻 */
             th:nth-child(2), td:nth-child(2) { width: 12%; } /* 種別 */
@@ -86,16 +99,20 @@
         }
         @media (min-width: 1200px) {
             h1 { font-size: 2.5rem;}
-            h2, h3{ font-size: 1.5rem;}
+            h2, h3, .update-time { font-size: 1.5rem;}
             th { font-size: 1.5rem; padding: 0.3em 0.3em; }
             td { font-size: 2.5rem; padding: 0.3em 0.3em; }
-            .time, .dest, .delay, .type-normal, .type-rapid, .danger { font-size: 3rem; }
+            .time, .dest, .delay, .type-normal, .type-rapid, .danger{ font-size: 3rem; }
         }
     </style>
 </head>
 <body>
-    <!-- <h1>列車運行情報</h1> -->
-    <h1>{{ line_name }} : <span class="{% if status == '遅延はありません'%}{% else %}delay{% endif %}">{{ status }}</span></h1>
+    <div class="header-row">
+        <div class="update-time">
+            {{ last_update }} 時点
+        </div>
+        <h1>{{ line_name }} : <span class="{% if status == '遅延はありません'%}{% else %}delay{% endif %}">{{ status }}</span></h1>
+    </div>
 
     <h2>上り (京都方面)</h2>
     <table>
