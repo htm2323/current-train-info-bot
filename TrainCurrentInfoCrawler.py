@@ -140,9 +140,17 @@ class TrainCurrentInfoCrawler():
                 debug_to_st = self.search_station_name(list_station, debug_between[0])
                 debug_pos = debug_from_st + ' ~ ' + debug_to_st
 
-            logger.debug(f"Train ID: {train['no']}, Type:{train['displayType']}, Dist:{train['dest']['text']}, Delay:{train['delayMinutes']} min, Pos: {debug_pos}, Is_In_Line: {is_in_line(train)}, Is_Exist_In_Schedule: {is_exist_in_schedule(train)}")
+            # logger.debug(f"Train ID: {train['no']}, Type:{train['displayType']}, Dist:{train['dest']['text']}, Delay:{train['delayMinutes']} min, Pos: {debug_pos}, Is_In_Line: {is_in_line(train)}, Is_Exist_In_Schedule: {is_exist_in_schedule(train)}")
             
             if is_in_line(train) and is_exist_in_schedule(train):
+                if is_up_direction(train):
+                    debug_deperture_time = get_train_deperture_time(train['no'], self.schedule[0])
+                else:
+                    debug_deperture_time = get_train_deperture_time(train['no'], self.schedule[1])
+
+                debug_remain_time = remain_time_until_deperture(train, debug_deperture_time['hour'], debug_deperture_time['minute'])
+                logger.debug(f"Deperture: {debug_deperture_time['hour']}:{('0' + debug_deperture_time['minute']) if len(debug_deperture_time['minute']) == 1 else debug_deperture_time['minute']}, Type:{train['displayType']}, Dist:{train['dest']['text']}, Delay:{train['delayMinutes']} min, Pos: {debug_pos}, remain_time: {debug_remain_time} min")
+
                 if is_behind_train(self.request_station_id, train['pos'].split('_')[0], is_up_direction(train)):
                     if is_up_direction(train):
                         if len(upward_train) < 3:
@@ -160,6 +168,14 @@ class TrainCurrentInfoCrawler():
                                 if not is_behind_train(downward_train[i]['pos'].split('_')[0], train['pos'].split('_')[0], False):
                                     downward_train[i] = train
                                     break
+            else:
+                if is_exist_in_schedule(train):
+                    if is_up_direction(train):
+                        debug_deperture_time = get_train_deperture_time(train['no'], self.schedule[0])
+                    else:
+                        debug_deperture_time = get_train_deperture_time(train['no'], self.schedule[1])
+                    logger.debug(f"Deperture: {debug_deperture_time['hour']}:{('0' + debug_deperture_time['minute']) if len(debug_deperture_time['minute']) == 1 else debug_deperture_time['minute']}, Train ID: {train['no']}, Type:{train['displayType']}, Dist:{train['dest']['text']}, Pos: {debug_pos}, Is_In_Line: {' 〇 ' if is_in_line(train) else ' × '}")
+                logger.debug(f"Train ID: {train['no']}, Type:{train['displayType']}, Dist:{train['dest']['text']}, Pos: {debug_pos}, Is_In_Line: {' 〇 ' if is_in_line(train) else ' × '}, Is_Exist_In_Schedule: {' 〇 ' if is_exist_in_schedule(train) else ' × '}")
 
         result_upward_train = []
         result_downward_train = []
