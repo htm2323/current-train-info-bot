@@ -57,12 +57,6 @@
             font-size: 2.5rem;
             text-align: center;
         }
-        /* 列幅の固定設定 */
-        th:nth-child(1), td:nth-child(1) { width: 12%; } /* 発車時刻 */
-        th:nth-child(2), td:nth-child(2) { width: 10%; } /* 種別 */
-        th:nth-child(3), td:nth-child(3) { width: 18%; } /* 行先 */
-        th:nth-child(4), td:nth-child(4) { width: 12%; } /* 遅延 */
-        th:nth-child(5), td:nth-child(5) { width: 48%; } /* 案内 */
         .time, .dest, .delay {
             font-size: 3rem;
             font-weight: bold;
@@ -98,11 +92,17 @@
             th:nth-child(5), td:nth-child(5) { width: 45%; } /* 案内 */
         }
         @media (min-width: 1200px) {
-            h1 { font-size: 2.5rem;}
-            h2, h3, .update-time { font-size: 1.5rem;}
-            th { font-size: 1.5rem; padding: 0.3em 0.3em; }
-            td { font-size: 2.5rem; padding: 0.3em 0.3em; }
-            .time, .dest, .delay, .type-normal, .type-rapid, .danger{ font-size: 3rem; }
+            h1 { font-size: 3.3rem;}
+            h2, h3, .update-time { font-size: 2rem;}
+            th { font-size: 2rem; padding: 0.3em 0.3em; }
+            td { font-size: 3.3rem; padding: 0.3em 0.3em; }
+            .time, .dest, .delay, .type-normal, .type-rapid, .danger{ font-size: 3.5rem; }
+            /* 列幅の固定設定 */
+            th:nth-child(1), td:nth-child(1) { width: 12%; } /* 発車時刻 */
+            th:nth-child(2), td:nth-child(2) { width: 12%; } /* 種別 */
+            th:nth-child(3), td:nth-child(3) { width: 15%; } /* 行先 */
+            th:nth-child(4), td:nth-child(4) { width: 13%; } /* 遅延 */
+            th:nth-child(5), td:nth-child(5) { width: 51%; } /* 案内 */
         }
     </style>
 </head>
