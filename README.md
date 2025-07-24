@@ -1,4 +1,4 @@
-# 現在の運行情報お知らせbot
+# 列車運行情報お知らせbot
 最寄り駅まで行って **電車が出んしゃ！** となることを防ぐためのWebサービスです．
 
 ## 概要
@@ -10,10 +10,12 @@
 - ページは30秒ごとに自動更新され，リアルタイムの運行情報が確認できます．
 
 ## 要件
-- Ubuntu
+- Ubuntu22.04
 - Python3
 - flask
 - beautifulsoup
+- pyyaml
+- tqdm
 
 ## 使用方法
 1. **依存パッケージのインストール**
@@ -54,6 +56,30 @@
     uv run app.py
     ```
 - 実行後，ブラウザで `http://localhost:5000` にアクセスしてください。
+
+## サービスを自動起動するように設定したい場合
+本サービスをマシン起動と同時に自動起動するようにしたい場合，`systemctl`コマンドを利用して，システム起動直後にプログラムが起動するようにしてください．
+systemctlを利用するためには，`/etc/systemd/system`ディレクトリに，`traininfo.service`を作成してください．
+
+以下は`hoge`ユーザーのDesktopに本リポジトリをクローンし，uvでプロジェクトをセットアップした場合の`traininfo.service`の例です．
+```
+[Unit]
+Description=train info flask app Service
+After=network.target
+
+[Service]
+Type=simple
+User=hoge
+Group=hoge
+WorkingDirectory=/home/hoge/Desktop/current-train-info-bot
+Environment="PATH=/home/hoge/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/hoge/.local/bin/uv run app.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
 
 ## 実装予定
 - slackのbotとしてリクエストを受けたらお知らせする機能
