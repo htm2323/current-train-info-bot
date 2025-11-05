@@ -15,6 +15,8 @@ logger = logging.getLogger("train_logger")
 class TrainCurrentInfoCrawler():
     def train_currentinfo_crawl(self, target):
         if target == TargetCompany.JRwest:
+            logger.debug('JR西日本のクロールを開始')
+
             with open(PARAMS_FILE, encoding='utf8') as params_file:
                 params = yaml.safe_load(params_file)
                 self.request_line = params['traininfo']['jr-west']['request_line']
@@ -55,6 +57,7 @@ class TrainCurrentInfoCrawler():
             logger.error(f"JR西日本の列車走行位置へHTTPアクセス中にエラー: {e}")
             return None, None, [], []
 
+        logger.debug("現在の運行情報の処理を開始")
         line_str, status_str = self.crawl_current_trafficinfo_jr_west()
         upward_train, downward_train = self.crawl_current_next_traininfo_jr_west(data, list_station)
 
