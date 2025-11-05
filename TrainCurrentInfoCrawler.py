@@ -56,11 +56,7 @@ class TrainCurrentInfoCrawler():
             return None, None, [], []
 
         line_str, status_str = self.crawl_current_trafficinfo_jr_west()
-        try:
-            upward_train, downward_train = self.crawl_current_next_traininfo_jr_west(data, list_station)
-        except Exception as e:
-            logger.error(f"列車情報の処理中にエラー: {e}")
-            return line_str, status_str, [], []
+        upward_train, downward_train = self.crawl_current_next_traininfo_jr_west(data, list_station)
 
         return line_str, status_str, upward_train, downward_train
 
@@ -237,13 +233,16 @@ class TrainCurrentInfoCrawler():
             logger.error(f"JR西日本の運行情報へHTTPアクセス中にエラー: {e}")
             return 'JR ' + self.request_line + '線 ', '運行情報の取得に失敗しました'
 
-        traffic_result = None
-        for line in traffic_data['lines']:
-            if line == self.request_line_en:
-                if traffic_data['lines'][line]['section']['from'] is None or traffic_data['lines'][line]['section']['to'] is None:
-                    return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
-                else:
-                    return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
+        try:
+            for line in traffic_data['lines']:
+                if line == self.request_line_en:
+                    if traffic_data['lines'][line]['section']['from'] is None or traffic_data['lines'][line]['section']['to'] is None:
+                        return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
+                    else:
+                        return 'JR ' + self.request_line + '線 ', traffic_data['lines'][line]['section']['from'] + ' から ' + traffic_data['lines'][line]['section']['to'] + ' まで ' + traffic_data['lines'][line]['cause'] + ' のため ' + traffic_data['lines'][line]['status']
+        except Exception as e:
+            logger.error(f"クロールしたJR西日本の運行情報の処理中にエラー: {e}")
+            return 'JR ' + self.request_line + '線 ', '運行情報の取得に失敗しました'
 
         return 'JR ' + self.request_line + '線 ', '遅延はありません'
 

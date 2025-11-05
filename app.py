@@ -108,5 +108,23 @@ def index():
 
 if __name__ == '__main__':
     # バックグラウンドでクロール開始
-    threading.Thread(target=crawl_loop, daemon=True).start()
-    app.run(debug=True)
+    crawl_thread = threading.Thread(target=crawl_loop, daemon=True)
+    server_thread = threading.Thread(target=app.run, kwargs={'port':5000}, daemon=True)
+
+    crawl_thread.start()
+    server_thread.start()
+
+    logger.info("アプリケーションが起動しました。")
+
+    while True:
+        if not crawl_thread.is_alive():
+            logger.error("クロール処理が停止しました。再起動します...")
+            crawl_thread = threading.Thread(target=crawl_loop, daemon=True)
+            crawl_thread.start()
+
+        if not server_thread.is_alive():
+            logger.error("Flaskサーバーが停止しました。再起動します...")
+            server_thread = threading.Thread(target=app.run, kwargs={'port':5000}, daemon=True)
+            server_thread.start()
+        
+        time.sleep(60)  # 1分ごとにチェック
