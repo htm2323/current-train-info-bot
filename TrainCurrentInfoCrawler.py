@@ -121,7 +121,7 @@ class TrainCurrentInfoCrawler():
             return '不明'
         
         def remain_time_until_deperture(train, hour, minute):
-            if int(hour) < datetime.datetime.now().hour and int(hour) <= 3:
+            if int(hour) < datetime.datetime.now().hour and int(hour) < 1:
                 departure_time = datetime.datetime.now().replace(day=int(datetime.datetime.now().day), hour=int(hour), minute=int(minute), second=0, microsecond=0) + datetime.timedelta(days=1)
             else:
                 departure_time = datetime.datetime.now().replace(hour=int(hour), minute=int(minute), second=0, microsecond=0)
